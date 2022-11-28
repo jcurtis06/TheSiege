@@ -1,6 +1,7 @@
 package io.jcurtis.thesiege.siege
 
 import org.bukkit.Bukkit
+import org.bukkit.Effect
 import org.bukkit.Location
 import org.bukkit.boss.BarColor
 import org.bukkit.boss.BarStyle
@@ -8,6 +9,8 @@ import org.bukkit.boss.BossBar
 import org.bukkit.entity.ArmorStand
 import org.bukkit.entity.Entity
 import org.bukkit.entity.EntityType
+import org.bukkit.entity.Firework
+import org.bukkit.entity.LightningStrike
 import org.bukkit.entity.Monster
 import org.bukkit.entity.Player
 import java.util.UUID
@@ -15,10 +18,10 @@ import java.util.UUID
 /*
 This class is responsible for holding data for a specific siege.
  */
-class Siege(val target: Location, val radius: Int, val maxWaves: Int, var wave: Int) {
+class Siege(val target: Location, val radius: Int, val maxWaves: Int, var wave: Int, private val handler: SiegeHandler) {
     val players = mutableListOf<UUID>()
     val entities = mutableListOf<Entity>()
-    val bossBar = Bukkit.createBossBar("Zombie Siege | Wave $wave", BarColor.RED, BarStyle.SOLID)
+    val bossBar = Bukkit.createBossBar("The Siege | Wave $wave", BarColor.RED, BarStyle.SOLID)
 
     fun addPlayer(player: Player) {
         players.add(player.uniqueId)
@@ -38,10 +41,10 @@ class Siege(val target: Location, val radius: Int, val maxWaves: Int, var wave: 
         entities.remove(entity)
         if (entities.isEmpty()) {
             wave++
-            if (wave > maxWaves) {
-                println("Siege complete!")
+            if (isComplete()) {
+                handler.endSiege(this)
             } else {
-                bossBar.setTitle("Zombie Siege | Wave $wave")
+                bossBar.setTitle("The Siege | Wave $wave")
                 spawnEntitiesRand(EntityType.ZOMBIE)
             }
         }
@@ -53,7 +56,7 @@ class Siege(val target: Location, val radius: Int, val maxWaves: Int, var wave: 
     }
 
     fun isComplete(): Boolean {
-        return wave >= maxWaves
+        return wave > maxWaves
     }
 
     fun isPlayerInSiege(player: Player): Boolean {
@@ -72,11 +75,12 @@ class Siege(val target: Location, val radius: Int, val maxWaves: Int, var wave: 
         players.forEach {
             val player = Bukkit.getPlayer(it)
             if (player != null) {
-                player.sendMessage("Daylight has come... The siege is over.")
+                player.sendMessage("The siege has ended. You are safe... for now.")
                 bossBar.removePlayer(player)
             }
         }
         entities.forEach {
+            var lightning = it.world.strikeLightningEffect(it.location)
             it.remove()
         }
     }

@@ -11,24 +11,25 @@ import org.bukkit.event.Listener
 
 class SiegeHandler(var defaultLoc: Location) {
     val sieges = mutableListOf<Siege>()
+    var siegeComplete = false
 
     init {
         Bukkit.getScheduler().scheduleSyncRepeatingTask(TheSiege.instance!!, Runnable {
-            if (Bukkit.getWorld("world")!!.time in 13001..13999) {
+            if (Bukkit.getWorld("world")!!.time == 14000L) {
                 if (sieges.isEmpty()) {
                     createSiege(3, 30)
                 }
-            } else if (sieges.isNotEmpty() && defaultLoc.world!!.time in 0..1000) {
+            } else if (sieges.isNotEmpty() && defaultLoc.world!!.time == 23000L) {
                 sieges.forEach {
                     it.endSiege()
                 }
                 sieges.clear()
             }
-        }, 0, 20)
+        }, 0, 1)
     }
 
     fun createSiege(maxWaves: Int, radius: Int, target: Location = defaultLoc): Siege? {
-        val siege = Siege(target, radius, maxWaves, 1)
+        val siege = Siege(target, radius, maxWaves, 1, this)
         Bukkit.getOnlinePlayers().forEach {
             if (Utils.isLocationInRadius(it.location, target, radius)) {
                 it.sendMessage("A siege has started at ${target.x}, ${target.z}, and you are in it! MWAHAAHHAHAHAH!")
@@ -54,19 +55,27 @@ class SiegeHandler(var defaultLoc: Location) {
     }
 
     fun getSiege(location: Location): Siege? {
-        try {
-            return sieges.first { it.isLocationInSiege(location) }
+        return try {
+            sieges.first { it.isLocationInSiege(location) }
         } catch (e: NoSuchElementException) {
-            return null
+            null
         }
     }
 
-    fun getSiege(entity: Entity): Siege {
-        return sieges.first { it.isEntityInSiege(entity) }
+    fun getSiege(entity: Entity): Siege? {
+        return try {
+            sieges.first { it.isEntityInSiege(entity) }
+        } catch (e: NoSuchElementException) {
+            null
+        }
     }
 
-    fun getSiege(player: Player): Siege {
-        return sieges.first { it.isPlayerInSiege(player) }
+    fun getSiege(player: Player): Siege? {
+        return try {
+            sieges.first { it.isPlayerInSiege(player) }
+        } catch (e: NoSuchElementException) {
+            null
+        }
     }
 
     fun isSiege(location: Location): Boolean {

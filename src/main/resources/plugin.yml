@@ -1,0 +1,8 @@
+name: TheSiege
+version: '${version}'
+main: io.jcurtis.thesiege.TheSiege
+api-version: 1.19
+prefix: THE SIEGE
+authors: [ jcurtis06 ]
+description: A plugin for the most daring of survival Minecraft players
+website: https://github.com/jcurtis06/TheSiege

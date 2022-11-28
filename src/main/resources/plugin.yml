@@ -6,3 +6,5 @@ prefix: THE SIEGE
 authors: [ jcurtis06 ]
 description: A plugin for the most daring of survival Minecraft players
 website: https://github.com/jcurtis06/TheSiege
+libraries:
+  - org.jetbrains.kotlin:kotlin-stdlib:1.7.20
